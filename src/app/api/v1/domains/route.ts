@@ -4,6 +4,8 @@ import { requireTenantContext } from "@/lib/auth/session";
 import { MailServerAllocator } from "@/lib/mail/MailServerAllocator";
 import { logAuditEvent } from "@/lib/audit";
 import { getAppSettings } from "@/lib/config";
+import { encryptSecret } from "@/lib/crypto/fieldEncryption";
+import { syncDkimSigningKeyToMailNode } from "@/lib/mail/dkimSigningSync";
 
 const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$/;
 
@@ -100,9 +102,19 @@ export async function POST(req: NextRequest) {
         status: "PENDING_VERIFICATION",
         dkimSelector: dkim.selector,
         dkimPublicKey: dkim.publicKey,
+        dkimPrivateKeyEncrypted: dkim.privateKey ? encryptSecret(dkim.privateKey) : null,
         isVerified: false,
       },
     });
+
+    let dkimSync = { synced: false, message: "No DKIM private key generated." };
+    if (dkim.privateKey) {
+      dkimSync = await syncDkimSigningKeyToMailNode({
+        domain: rawDomain,
+        selector: dkim.selector,
+        privateKeyPem: dkim.privateKey,
+      });
+    }
 
     await logAuditEvent({
       actorId: user.id,
@@ -147,6 +159,7 @@ export async function POST(req: NextRequest) {
           ns1: settings.mailNs1,
           ns2: settings.mailNs2,
         },
+        dkimSync,
       },
       { status: 201 }
     );

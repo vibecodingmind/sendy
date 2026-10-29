@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { SimulationBanner } from "@/components/ui/SimulationBanner";
 import {
   Globe,
   Key,
@@ -140,6 +141,7 @@ export default function AdminDomainRegistrarPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
+      <SimulationBanner feature="Domain registrar integration" />
       <div>
         <h1 className="text-2xl font-bold text-white tracking-tight flex items-center space-x-2">
           <Globe className="w-6 h-6 text-amber-400" />

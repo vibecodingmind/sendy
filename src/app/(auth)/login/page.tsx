@@ -55,9 +55,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] bg-grid-pattern text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Background Radial Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-radial-hero pointer-events-none" />
+    <div className="min-h-screen bg-ink-950 auth-grid text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] auth-glow pointer-events-none" />
       <div className="absolute -top-24 right-1/4 w-96 h-96 bg-indigo-500/10 blur-[130px] rounded-full pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
@@ -200,8 +199,8 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* Quick-fill Seed Credentials for Testing & Review */}
-          {!requiresTwoFactor && (
+          {/* Quick-fill Seed Credentials — development only */}
+          {!requiresTwoFactor && process.env.NODE_ENV !== "production" && (
             <div className="pt-5 border-t border-white/[0.06] space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold tracking-wider uppercase text-slate-400">

@@ -106,7 +106,11 @@ export async function requireTenantContext(): Promise<TenantContext> {
     }
   }
 
-  const membership = user.memberships[0];
+  const membership =
+    (session.organizationId
+      ? user.memberships.find((m) => m.organization?.id === session.organizationId)
+      : undefined) || user.memberships[0];
+
   if (!membership || !membership.organization) {
     throw new Error("NO_ORGANIZATION_FOUND");
   }

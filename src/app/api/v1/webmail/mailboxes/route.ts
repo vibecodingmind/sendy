@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { requireTenantContext } from "@/lib/auth/session";
+import { isSimulatedWebmailEnabled } from "@/lib/features/flags";
 
 /**
  * Seed starter emails into a newly initialized mailbox for immediate preview.
@@ -96,36 +97,40 @@ export async function GET(request: NextRequest) {
       orderBy: { email: "asc" },
     });
 
-    // Check if mailboxes have messages; if not, seed starter emails
-    for (const mb of mailboxes) {
-      const msgCount = await prisma.webmailMessage.count({
-        where: { mailboxId: mb.id },
-      });
-      if (msgCount === 0) {
-        await seedStarterEmails(mb.id, mb.email);
+    let seeded = false;
+    if (isSimulatedWebmailEnabled()) {
+      for (const mb of mailboxes) {
+        const msgCount = await prisma.webmailMessage.count({
+          where: { mailboxId: mb.id },
+        });
+        if (msgCount === 0) {
+          await seedStarterEmails(mb.id, mb.email);
+          seeded = true;
+        }
       }
     }
 
-    // Re-fetch counts if seeded
-    const updatedMailboxes = await prisma.mailbox.findMany({
-      where: {
-        organizationId: organization.id,
-        status: "ACTIVE",
-      },
-      include: {
-        domain: {
-          select: { name: true },
-        },
-        _count: {
-          select: {
-            messages: {
-              where: { folder: "INBOX", isRead: false },
+    const updatedMailboxes = seeded
+      ? await prisma.mailbox.findMany({
+          where: {
+            organizationId: organization.id,
+            status: "ACTIVE",
+          },
+          include: {
+            domain: {
+              select: { name: true },
+            },
+            _count: {
+              select: {
+                messages: {
+                  where: { folder: "INBOX", isRead: false },
+                },
+              },
             },
           },
-        },
-      },
-      orderBy: { email: "asc" },
-    });
+          orderBy: { email: "asc" },
+        })
+      : mailboxes;
 
     return NextResponse.json({
       mailboxes: updatedMailboxes.map((mb) => ({

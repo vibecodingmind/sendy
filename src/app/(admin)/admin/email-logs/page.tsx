@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Mail, RefreshCw, ArrowUpRight, ArrowDownLeft, Shield } from "lucide-react";
+import { SimulationBanner } from "@/components/ui/SimulationBanner";
 
 interface EmailLogEntry {
   id: string;
@@ -41,6 +42,7 @@ export default function AdminEmailLogsPage() {
 
   return (
     <div className="space-y-6">
+      <SimulationBanner feature="Email activity logs" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Mail Delivery & Transaction Logs</h1>

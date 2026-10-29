@@ -13,6 +13,7 @@ import {
   Loader2,
   Smartphone,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface PlanItem {
   id: string;
@@ -215,12 +216,10 @@ export default function BillingPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Billing & Subscriptions</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Manage your email hosting plan, review invoices, and expand mailbox or storage capacity.
-        </p>
-      </div>
+      <PageHeader
+        title="Billing"
+        description="Manage your plan, payment methods, and invoices for email hosting."
+      />
 
       {message && (
         <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm flex items-center space-x-2">

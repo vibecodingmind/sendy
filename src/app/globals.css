@@ -2,23 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── BASE ─────────────────────────────────────────── */
-html { scroll-behavior: smooth; }
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    @apply bg-slate-50 text-slate-900;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    @apply ring-2 ring-brand-500/30 border-brand-500;
+  }
 }
 
-/* ─── FOCUS STATE ──────────────────────────────────── */
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+@layer components {
+  .surface-app {
+    @apply bg-[#f4f6fb] min-h-screen;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.07), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(6, 182, 212, 0.05), transparent);
+  }
+
+  .surface-card {
+    @apply bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl shadow-soft;
+  }
+
+  .surface-card-elevated {
+    @apply bg-white border border-slate-200/90 rounded-2xl shadow-card;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl
+      bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98] transition-all
+      shadow-sm shadow-brand-600/20 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl
+      bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition-all;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg
+      text-slate-600 hover:bg-slate-100 transition-colors;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all;
+  }
+
+  .nav-item-active {
+    @apply bg-brand-600 text-white shadow-md shadow-brand-600/25;
+  }
+
+  .nav-item-idle {
+    @apply text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-soft;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide;
+  }
+
+  .badge-live {
+    @apply badge bg-emerald-100 text-emerald-800 border border-emerald-200;
+  }
+
+  .badge-beta {
+    @apply badge bg-amber-100 text-amber-900 border border-amber-200;
+  }
+
+  .badge-mock {
+    @apply badge bg-slate-100 text-slate-600 border border-slate-200;
+  }
+
+  .page-title {
+    @apply text-2xl sm:text-3xl font-display font-bold tracking-tight text-slate-900;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-slate-500 mt-1 max-w-2xl;
+  }
+
+  .stat-value {
+    @apply text-2xl sm:text-3xl font-display font-bold tabular-nums text-slate-900;
+  }
+
+  .auth-grid {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .auth-glow {
+    background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.18), transparent 68%);
+  }
 }
 
-/* ─── RANGE SLIDER ─────────────────────────────────── */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -27,22 +112,13 @@ input[type="range"] {
   border-radius: 999px;
   cursor: pointer;
 }
+
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #4f46e5;
   border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-/* ─── AUTH PAGE BACKGROUNDS ────────────────────────── */
-.bg-grid-pattern {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-.bg-radial-hero {
-  background: radial-gradient(ellipse at center, rgba(99,102,241,0.15), transparent 70%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

@@ -17,7 +17,7 @@ export default async function AdminLayout({
   const settings = await getAppSettings();
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col bg-ink-950 text-slate-100">
       <Navbar
         brandName={`${settings.appName} Admin`}
         webmailUrl={settings.mailWebmailUrl}

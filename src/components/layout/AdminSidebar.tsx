@@ -19,8 +19,17 @@ import {
   Globe,
 } from "lucide-react";
 
+const SIMULATION_HREFS = new Set([
+  "/admin/domain-registrar",
+  "/admin/email-logs",
+  "/admin/backups",
+]);
+
 export function AdminSidebar() {
   const pathname = usePathname();
+  const showSimulationNav =
+    process.env.NEXT_PUBLIC_ENABLE_ADMIN_SIMULATION_NAV === "true" ||
+    process.env.NODE_ENV !== "production";
 
   const links = [
     { label: "Platform Overview", href: "/admin", icon: Activity },
@@ -35,10 +44,10 @@ export function AdminSidebar() {
     { label: "System Backups", href: "/admin/backups", icon: HardDrive },
     { label: "Audit Logs", href: "/admin/logs", icon: FileText },
     { label: "System Settings", href: "/admin/settings", icon: Sliders },
-  ];
+  ].filter((link) => showSimulationNav || !SIMULATION_HREFS.has(link.href));
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-200 border-r border-slate-800 shrink-0 flex flex-col justify-between py-5 px-3 min-h-[calc(100vh-4rem)]">
+    <aside className="w-64 bg-ink-900/95 backdrop-blur-md text-slate-200 border-r border-slate-800/80 shrink-0 flex flex-col justify-between py-5 px-3 min-h-[calc(100vh-4rem)]">
       <div>
         <div className="px-3 pb-4 mb-2 border-b border-slate-800 flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">

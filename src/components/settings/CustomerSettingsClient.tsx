@@ -23,6 +23,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { AppSettings } from "@/lib/config";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface CustomerSettingsClientProps {
   mailSettings: AppSettings;
@@ -328,16 +329,10 @@ export function CustomerSettingsClient({ mailSettings }: CustomerSettingsClientP
 
   return (
     <div className="space-y-6">
-      {/* Page Title & Tab Selector */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Account & Client Settings</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Manage your personal profile, verify email address, update login password, and configure email clients.
-          </p>
-        </div>
-
-        {/* Tab Switcher */}
+      <PageHeader
+        title="Settings"
+        description="Profile, security, two-factor authentication, and email client setup."
+        actions={
         <div className="flex bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
           <button
             onClick={() => setActiveTab("profile")}
@@ -375,7 +370,8 @@ export function CustomerSettingsClient({ mailSettings }: CustomerSettingsClientP
             <span>Security &amp; 2FA</span>
           </button>
         </div>
-      </div>
+        }
+      />
 
       {/* TAB 1: Profile & Account */}
       {activeTab === "profile" && (

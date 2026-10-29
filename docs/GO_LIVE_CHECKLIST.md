@@ -8,6 +8,10 @@ Use this after configuring production secrets on the control-plane VPS.
 - [ ] Set `NODE_ENV=production`, strong `JWT_SECRET`, `CRON_SECRET`.
 - [ ] Set `DATABASE_URL` to PostgreSQL (matches Docker Compose).
 - [ ] Set `MAIL_PROVIDER=iredmail` and all `IREDMAIL_DB_*` values (private network to mail node).
+- [ ] Set `IREDMAIL_DKIM_DIR` on the control plane (mounted path to Rspamd DKIM keys on mail node) and reload Rspamd after domain verify.
+- [ ] Set `FIELD_ENCRYPTION_KEY` (32+ chars) for DKIM private key storage in SaaS DB.
+- [ ] Leave `ENABLE_SIMULATED_WEBMAIL` unset (off in production); set `MAIL_WEBMAIL_URL` for Roundcube.
+- [ ] Do not set `NEXT_PUBLIC_ENABLE_ADMIN_SIMULATION_NAV` in production (hides mock admin pages).
 - [ ] Set `PAYMENT_PROVIDER` to `stripe` or `azampay` (not `mock`).
 - [ ] Set `STRIPE_WEBHOOK_SECRET` / `AZAMPAY_WEBHOOK_SECRET` and register webhook URLs with providers.
 - [ ] Set `AZAMPAY_SIMULATE=false`.

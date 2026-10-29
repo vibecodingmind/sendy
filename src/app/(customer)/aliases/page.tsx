@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Share2, Plus, Trash2, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface AliasItem {
   id: string;
@@ -117,12 +118,10 @@ export default function AliasesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Email Aliases</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Route multiple email addresses (e.g. sales@, info@, billing@) to an existing team mailbox without creating separate accounts.
-        </p>
-      </div>
+      <PageHeader
+        title="Aliases"
+        description="Route addresses like sales@ or info@ to an existing mailbox without extra accounts."
+      />
 
       {error && (
         <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-sm flex items-center space-x-2">

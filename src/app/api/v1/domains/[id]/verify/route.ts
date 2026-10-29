@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { requireTenantContext } from "@/lib/auth/session";
 import { DnsVerifier } from "@/lib/dns/verifier";
 import { logAuditEvent } from "@/lib/audit";
+import { syncDkimFromEncryptedDomainRecord } from "@/lib/mail/dkimSigningSync";
 
 export async function POST(
   req: NextRequest,
@@ -67,6 +68,20 @@ export async function POST(
         resourceType: "Domain",
         resourceId: domain.id,
         metadata: { domain: domain.name },
+      });
+
+      const refreshed = await prisma.domain.findUnique({ where: { id: domain.id } });
+      const dkimSync = refreshed
+        ? await syncDkimFromEncryptedDomainRecord(refreshed)
+        : { synced: false, message: "Domain not found for DKIM sync." };
+
+      return NextResponse.json({
+        domainId: domain.id,
+        domainName: domain.name,
+        isVerified: verification.overallValid,
+        status: "VERIFIED",
+        results: verification,
+        dkimSync,
       });
     } else {
       await prisma.domain.update({

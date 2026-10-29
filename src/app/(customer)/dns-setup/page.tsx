@@ -18,6 +18,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface DnsCheckItem {
   valid: boolean;
@@ -154,21 +155,12 @@ function DnsSetupContent() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-            <Radio className="w-6 h-6 text-indigo-600" />
-            <span>Domain DNS & Connection Setup</span>
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Connect your domain to start sending and receiving emails. Choose between automated Nameservers (recommended) or manual DNS records.
-          </p>
-        </div>
-
-        {/* Domain Selector */}
+      <PageHeader
+        title="DNS setup"
+        description="Use managed nameservers or manual records to connect MX, SPF, DKIM, and DMARC."
+        actions={
         <div className="flex items-center space-x-2">
-          <label className="text-xs font-semibold text-slate-500">Domain:</label>
+          <label className="text-xs font-semibold text-slate-500">Domain</label>
           <select
             value={selectedDomain?.id || ""}
             onChange={(e) => {
@@ -184,7 +176,8 @@ function DnsSetupContent() {
             ))}
           </select>
         </div>
-      </div>
+        }
+      />
 
       {/* Verification Status Banner */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">

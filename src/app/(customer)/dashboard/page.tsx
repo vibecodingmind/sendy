@@ -15,6 +15,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { getAppSettings } from "@/lib/config";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { ProductNotice } from "@/components/ui/ProductNotice";
 
 export default async function CustomerDashboardPage() {
   const { organization, subscription } = await requireTenantContext();
@@ -72,34 +75,28 @@ export default async function CustomerDashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Welcome, {organization.name}
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Overview of your active business email infrastructure and mailboxes.
-          </p>
-        </div>
+      <PageHeader
+        title={`Welcome, ${organization.name}`}
+        description="Overview of your business email infrastructure, DNS health, and plan usage."
+        actions={
+          <>
+            <Link href="/domains" className="btn-secondary">
+              <Plus className="w-4 h-4 text-slate-500" />
+              Add domain
+            </Link>
+            <Link href="/mailboxes" className="btn-primary">
+              <Plus className="w-4 h-4" />
+              Create mailbox
+            </Link>
+          </>
+        }
+      />
 
-        <div className="flex items-center space-x-3">
-          <Link
-            href="/domains"
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
-          >
-            <Plus className="w-4 h-4 text-slate-500" />
-            <span>Add Domain</span>
-          </Link>
-          <Link
-            href="/mailboxes"
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-xs"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Mailbox</span>
-          </Link>
-        </div>
-      </div>
+      <ProductNotice
+        id="webmail_simulator_v1"
+        title="Built-in webmail is a preview environment"
+        message="Use Open Webmail in the header for Roundcube, or connect via IMAP/SMTP. Production delivery requires iRedMail (MAIL_PROVIDER=iredmail) and verified DNS."
+      />
 
       {/* Actionable Alerts Banner */}
       {pendingDnsCount > 0 && (
@@ -142,117 +139,85 @@ export default async function CustomerDashboardPage() {
         </div>
       )}
 
-      {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Subscription Card */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Subscription
-            </span>
-            <CreditCard className="w-4 h-4 text-indigo-500" />
-          </div>
-          <div className="mt-3">
-            <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-slate-900">
-                {subscription?.plan?.name || "Trial"}
-              </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                {subscription?.status || "ACTIVE"}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Active until: <span className="font-medium text-slate-700">{renewalDate}</span>
-            </p>
-          </div>
-          <Link
-            href="/billing"
-            className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 mt-4 flex items-center space-x-1"
-          >
-            <span>Manage billing</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {/* Domains Card */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Domains
-            </span>
-            <Globe className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-900">
-              {totalDomains} <span className="text-sm font-normal text-slate-400">/ {maxDomains}</span>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              {totalDomains - pendingDnsCount} verified & active
-            </p>
-          </div>
-          <Link
-            href="/domains"
-            className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 mt-4 flex items-center space-x-1"
-          >
-            <span>View domains</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {/* Mailboxes Card */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Mailboxes
-            </span>
-            <Mail className="w-4 h-4 text-blue-500" />
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-900">
-              {totalMailboxes} <span className="text-sm font-normal text-slate-400">/ {maxMailboxes}</span>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              {maxMailboxes - totalMailboxes} slots remaining
-            </p>
-          </div>
-          <Link
-            href="/mailboxes"
-            className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 mt-4 flex items-center space-x-1"
-          >
-            <span>Manage mailboxes</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {/* Storage Card */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Storage
-            </span>
-            <HardDrive className="w-4 h-4 text-purple-500" />
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-900">
-              {usedStorageGb} GB <span className="text-sm font-normal text-slate-400">/ {maxStorageGb} GB</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2.5">
-              <div
-                className={`h-1.5 rounded-full ${
-                  storagePercent > 85 ? "bg-rose-500" : storagePercent > 65 ? "bg-amber-500" : "bg-indigo-600"
-                }`}
-                style={{ width: `${storagePercent}%` }}
-              />
-            </div>
-          </div>
-          <Link
-            href="/usage"
-            className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 mt-4 flex items-center space-x-1"
-          >
-            <span>Storage details</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+        <StatCard
+          label="Subscription"
+          value={subscription?.plan?.name || "Trial"}
+          hint={`${subscription?.status || "ACTIVE"} · until ${renewalDate}`}
+          icon={CreditCard}
+          tone="brand"
+          footer={
+            <Link
+              href="/billing"
+              className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1"
+            >
+              Manage billing <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          }
+        />
+        <StatCard
+          label="Domains"
+          value={`${totalDomains} / ${maxDomains}`}
+          hint={
+            pendingDnsCount > 0
+              ? `${pendingDnsCount} pending DNS verification`
+              : "All domains verified"
+          }
+          icon={Globe}
+          tone={pendingDnsCount > 0 ? "warning" : "success"}
+          footer={
+            <Link
+              href="/domains"
+              className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1"
+            >
+              View domains <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          }
+        />
+        <StatCard
+          label="Mailboxes"
+          value={`${totalMailboxes} / ${maxMailboxes}`}
+          hint={`${maxMailboxes - totalMailboxes} slots remaining`}
+          icon={Mail}
+          tone="default"
+          footer={
+            <Link
+              href="/mailboxes"
+              className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1"
+            >
+              Manage mailboxes <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          }
+        />
+        <StatCard
+          label="Storage"
+          value={`${usedStorageGb} / ${maxStorageGb} GB`}
+          hint={`${storagePercent}% of plan quota`}
+          icon={HardDrive}
+          tone={storagePercent > 85 ? "warning" : "default"}
+          footer={
+            <>
+              <div className="w-full bg-slate-100 rounded-full h-1.5 mt-1">
+                <div
+                  className={`h-1.5 rounded-full ${
+                    storagePercent > 85
+                      ? "bg-rose-500"
+                      : storagePercent > 65
+                        ? "bg-amber-500"
+                        : "bg-brand-600"
+                  }`}
+                  style={{ width: `${storagePercent}%` }}
+                />
+              </div>
+              <Link
+                href="/usage"
+                className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 mt-2"
+              >
+                Storage details <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </>
+          }
+        />
       </div>
 
       {/* Fast Access Grid: Domains & Webmail */}

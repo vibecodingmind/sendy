@@ -16,6 +16,7 @@ import {
   CalendarClock,
   Clock,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface MailboxItem {
   id: string;
@@ -280,23 +281,21 @@ export default function MailboxesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Mailbox Management</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Provision email accounts, manage passwords, storage quotas, and mailbox statuses.
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowCreateModal(true)}
-          disabled={domains.length === 0}
-          className="inline-flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-xs disabled:opacity-50 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create Mailbox</span>
-        </button>
-      </div>
+      <PageHeader
+        title="Mailboxes"
+        description="Provision accounts, reset passwords, set quotas, and manage mailbox status."
+        actions={
+          <button
+            type="button"
+            onClick={() => setShowCreateModal(true)}
+            disabled={domains.length === 0}
+            className="btn-primary inline-flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create mailbox</span>
+          </button>
+        }
+      />
 
       {/* Storage Quota Warning Banner */}
       {criticalMailboxes.length > 0 && (

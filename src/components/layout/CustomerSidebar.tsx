@@ -25,6 +25,8 @@ import {
   MoreVertical,
   PenTool,
 } from "lucide-react";
+import { OrganizationSwitcher, OrgOption } from "@/components/layout/OrganizationSwitcher";
+import { isPublicSimulatedWebmailEnabled } from "@/lib/features/publicFlags";
 
 interface AuthUser {
   id: string;
@@ -47,6 +49,8 @@ export function CustomerSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [org, setOrg] = useState<AuthOrg | null>(null);
+  const [organizations, setOrganizations] = useState<OrgOption[]>([]);
+  const [activeOrganizationId, setActiveOrganizationId] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +72,8 @@ export function CustomerSidebar() {
         if (data?.authenticated) {
           setUser(data.user);
           setOrg(data.organization);
+          setOrganizations(data.organizations || (data.organization ? [data.organization] : []));
+          setActiveOrganizationId(data.activeOrganizationId || data.organization?.id || null);
         }
       })
       .catch(() => {});
@@ -97,17 +103,21 @@ export function CustomerSidebar() {
     router.push("/login");
   };
 
+  const emailNavItems = [
+    ...(isPublicSimulatedWebmailEnabled()
+      ? [{ label: "Webmail (preview)", href: "/webmail", icon: Inbox, badge: "beta" as const }]
+      : []),
+    { label: "Mailboxes", href: "/mailboxes", icon: Mail },
+        { label: "Aliases", href: "/aliases", icon: Share2 },
+        { label: "Forwarders", href: "/forwarders", icon: CornerUpRight },
+    { label: "Signatures", href: "/signatures", icon: PenTool },
+  ];
+
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     {
       group: "Email",
-      items: [
-        { label: "Webmail", href: "/webmail", icon: Inbox },
-        { label: "Mailboxes", href: "/mailboxes", icon: Mail },
-        { label: "Aliases", href: "/aliases", icon: Share2 },
-        { label: "Forwarders", href: "/forwarders", icon: CornerUpRight },
-        { label: "Signatures", href: "/signatures", icon: PenTool },
-      ],
+      items: emailNavItems,
     },
     { label: "Domains", href: "/domains", icon: Globe },
     { label: "DNS Setup", href: "/dns-setup", icon: Radio },
@@ -128,8 +138,8 @@ export function CustomerSidebar() {
 
   return (
     <aside
-      className={`bg-white border-r border-slate-200 shrink-0 flex flex-col justify-between py-4 px-3 min-h-[calc(100vh-4rem)] transition-all duration-300 ease-in-out relative z-20 ${
-        collapsed ? "w-20" : "w-64"
+      className={`bg-white/85 backdrop-blur-md border-r border-slate-200/80 shrink-0 flex flex-col justify-between py-4 px-3 min-h-[calc(100vh-4rem)] transition-all duration-300 ease-in-out relative z-20 shadow-soft ${
+        collapsed ? "w-[4.5rem]" : "w-64"
       }`}
     >
       {/* Top Section */}
@@ -185,7 +195,14 @@ export function CustomerSidebar() {
                               isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
                             }`}
                           />
-                          {!collapsed && <span>{sub.label}</span>}
+                          {!collapsed && (
+                            <span className="flex items-center gap-1.5 min-w-0">
+                              <span className="truncate">{sub.label.replace(" (preview)", "")}</span>
+                              {"badge" in sub && sub.badge === "beta" && (
+                                <span className="badge-beta shrink-0">Beta</span>
+                              )}
+                            </span>
+                          )}
 
                           {/* Hover Tooltip when collapsed */}
                           {collapsed && (
@@ -326,7 +343,16 @@ export function CustomerSidebar() {
               <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 mb-1">
                 <p className="font-bold text-slate-900 text-sm">{displayName}</p>
                 <p className="text-slate-500 text-[11px] font-mono truncate">{user?.email}</p>
-                {org && (
+                {organizations.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-slate-200">
+                    <OrganizationSwitcher
+                      organizations={organizations}
+                      activeOrganizationId={activeOrganizationId}
+                      compact
+                    />
+                  </div>
+                )}
+                {org && organizations.length <= 1 && (
                   <div className="mt-1.5 pt-1.5 border-t border-slate-200 flex items-center justify-between text-[11px]">
                     <span className="text-slate-400">Organization:</span>
                     <span className="font-semibold text-slate-700">{org.name}</span>

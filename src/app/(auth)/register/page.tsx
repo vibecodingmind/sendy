@@ -43,9 +43,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] bg-grid-pattern text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Background Radial Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-radial-hero pointer-events-none" />
+    <div className="min-h-screen bg-ink-950 auth-grid text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] auth-glow pointer-events-none" />
       <div className="absolute -top-24 left-1/4 w-96 h-96 bg-indigo-500/10 blur-[130px] rounded-full pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">

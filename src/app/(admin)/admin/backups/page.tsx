@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { HardDrive, CheckCircle2, RefreshCw, Download, ShieldCheck, Database, Calendar } from "lucide-react";
+import { SimulationBanner } from "@/components/ui/SimulationBanner";
 
 interface BackupRecord {
   id: string;
@@ -65,6 +66,7 @@ export default function AdminBackupsPage() {
 
   return (
     <div className="space-y-6">
+      <SimulationBanner feature="System backups" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">System &amp; Mail Backups</h1>

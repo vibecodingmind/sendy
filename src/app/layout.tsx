@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Monogram Mail — Enterprise Email Platform",
-  description: "Secure, reliable, carrier-grade business email platform and administration portal.",
+  description:
+    "Secure business email hosting: domains, mailboxes, DNS verification, and billing in one control plane.",
 };
 
 export default function RootLayout({
@@ -15,10 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`h-full ${inter.className}`}>
-      <body className="h-full bg-slate-50 text-slate-900 antialiased flex flex-col font-sans">
-        {children}
-      </body>
+    <html lang="en" className={`h-full ${jakarta.variable} ${dmSans.variable}`}>
+      <body className="h-full font-sans antialiased flex flex-col">{children}</body>
     </html>
   );
 }

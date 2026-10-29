@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { CornerUpRight, Plus, Trash2, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface ForwarderItem {
   id: string;
@@ -102,12 +103,10 @@ export default function ForwardersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Email Forwarders</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Automatically forward incoming emails to external addresses (e.g. personal inbox, CRM, external helpdesk) with optional local backup.
-        </p>
-      </div>
+      <PageHeader
+        title="Forwarders"
+        description="Forward mail to external inboxes or tools, with optional copy kept on the server."
+      />
 
       {error && (
         <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-sm flex items-center space-x-2">

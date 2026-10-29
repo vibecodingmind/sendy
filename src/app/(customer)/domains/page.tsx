@@ -14,6 +14,7 @@ import {
   Radio,
   Inbox,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface DomainItem {
   id: string;
@@ -157,14 +158,10 @@ export default function DomainsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Domain Management</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Connect custom domains, generate email authentication keys (SPF, DKIM, DMARC), and verify routing.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Domains"
+        description="Connect custom domains, publish SPF/DKIM/DMARC, and verify routing before mail goes live."
+      />
 
       {error && (
         <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-sm flex items-center space-x-2">

@@ -18,7 +18,7 @@ export default async function CustomerLayout({
   const settings = await getAppSettings();
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col surface-app">
       <Navbar brandName={settings.appName} webmailUrl={settings.mailWebmailUrl} />
       <div className="flex flex-1 overflow-hidden">
         <CustomerSidebar />

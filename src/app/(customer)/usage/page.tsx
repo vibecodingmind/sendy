@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { HardDrive, Mail, Globe, AlertTriangle } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface UsageData {
   summary: {
@@ -45,12 +46,10 @@ export default function UsagePage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Resource Usage & Metrics</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Monitor your organization's storage volume, mailbox allocations, and domain limits in real time.
-        </p>
-      </div>
+      <PageHeader
+        title="Usage"
+        description="Storage, mailbox counts, and plan limits for your organization."
+      />
 
       {/* Primary Storage Bar Card */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-xs space-y-4">

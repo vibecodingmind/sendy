@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Headphones,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface SupportMessage {
   id: string;
@@ -201,25 +202,20 @@ export default function CustomerSupportPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Headphones className="w-6 h-6 text-indigo-600" />
-            Support & Help Desk
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Need help with email deliverability, DNS propagation, or mailbox setup? Open a ticket with our support engineers.
-          </p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          New Ticket
-        </button>
-      </div>
+      <PageHeader
+        title="Support"
+        description="DNS, deliverability, and mailbox help from our engineering team."
+        actions={
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            New ticket
+          </button>
+        }
+      />
 
       {selectedTicket ? (
         /* Ticket Thread View */

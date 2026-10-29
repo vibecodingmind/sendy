@@ -23,6 +23,13 @@ export async function GET() {
         emailVerified: true,
         lastLoginAt: true,
         createdAt: true,
+        memberships: {
+          include: {
+            organization: {
+              select: { id: true, name: true, slug: true, status: true },
+            },
+          },
+        },
       },
     });
 
@@ -30,20 +37,34 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    if (session.role === "SUPER_ADMIN") {
+    const organizations =
+      fullUser.memberships?.map((m) => ({
+        id: m.organization.id,
+        name: m.organization.name,
+        slug: m.organization.slug,
+        status: m.organization.status,
+      })) || [];
+
+    const { memberships: _memberships, ...userProfile } = fullUser;
+
+    if (session.role === "SUPER_ADMIN" && organizations.length === 0) {
       return NextResponse.json({
         authenticated: true,
-        user: fullUser,
+        user: userProfile,
         organization: null,
+        organizations: [],
+        activeOrganizationId: session.organizationId || null,
       });
     }
 
     const tenantContext = await requireTenantContext();
     return NextResponse.json({
       authenticated: true,
-      user: fullUser,
+      user: userProfile,
       organization: tenantContext.organization,
       subscription: tenantContext.subscription,
+      organizations,
+      activeOrganizationId: session.organizationId || tenantContext.organization.id,
     });
   } catch {
     return NextResponse.json({ authenticated: false }, { status: 401 });
