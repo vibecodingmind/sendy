@@ -1,0 +1,18 @@
+services:
+  iredmail-db:
+    image: mariadb:10.11
+    container_name: iredmail-staging-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_staging_pass
+      MYSQL_DATABASE: vmail
+      MYSQL_USER: vmailadmin
+      MYSQL_PASSWORD: change_me_to_vmail_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./prisma/init-vmail.sql:/docker-entrypoint-initdb.d/init-vmail.sql:ro
+      - iredmail_db_data:/var/lib/mysql
+
+volumes:
+  iredmail_db_data:

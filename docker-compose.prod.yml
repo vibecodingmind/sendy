@@ -1,0 +1,83 @@
+version: "3.8"
+
+services:
+  # Monogram Mail SaaS Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: monogrammail/saas:latest
+    restart: always
+    environment:
+      - PORT=3010
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-mailoo}:${POSTGRES_PASSWORD:-ChangeMePostgresPassword!}@postgres:5432/${POSTGRES_DB:-mailoo_saas}?schema=public
+      - JWT_SECRET=${JWT_SECRET:-ChangeThisToAStrongRandomSecretInProduction_12345}
+      - APP_URL=${APP_URL:-https://app.monogrammail.com}
+      - MAIL_PROVIDER=${MAIL_PROVIDER:-iredmail}
+      - IREDMAIL_DB_TYPE=${IREDMAIL_DB_TYPE:-mysql}
+      - IREDMAIL_DB_HOST=${IREDMAIL_DB_HOST:-mail.monogrammail.com}
+      - IREDMAIL_DB_PORT=${IREDMAIL_DB_PORT:-3306}
+      - IREDMAIL_DB_USER=${IREDMAIL_DB_USER:-vmailadmin}
+      - IREDMAIL_DB_PASSWORD=${IREDMAIL_DB_PASSWORD}
+      - IREDMAIL_DB_NAME=${IREDMAIL_DB_NAME:-vmail}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - AZAMPAY_WEBHOOK_SECRET=${AZAMPAY_WEBHOOK_SECRET}
+      - CRON_SECRET=${CRON_SECRET:-SecretCronToken_ChangeMe!}
+      - MAX_HOURLY_EMAILS_PER_MAILBOX=${MAX_HOURLY_EMAILS_PER_MAILBOX:-250}
+      - AZAMPAY_SIMULATE=false
+    ports:
+      - "3010:3010"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - saas-network
+
+  # High-Availability PostgreSQL Database for SaaS Control Plane
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-mailoo}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ChangeMePostgresPassword!}
+      - POSTGRES_DB=${POSTGRES_DB:-mailoo_saas}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - saas-network
+
+  # Redis for Session / Cache / Background Queues
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - saas-network
+
+  # Production Nginx Ingress Proxy (with SSL & Rate Limiting)
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - certs_data:/etc/letsencrypt:ro
+    depends_on:
+      - web
+    networks:
+      - saas-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  certs_data:
+
+networks:
+  saas-network:
+    driver: bridge

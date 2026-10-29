@@ -1,0 +1,459 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  role          String    @default("CUSTOMER_ADMIN") // SUPER_ADMIN, CUSTOMER_ADMIN, MAILBOX_USER
+  isActive      Boolean   @default(true)
+  emailVerified DateTime?
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  twoFactorBackupCodes String? // JSON array of backup codes
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  memberships    OrganizationMember[]
+  supportTickets SupportTicket[]
+  supportMessages SupportMessage[]
+  sessions       UserSession[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Organization {
+  id           String    @id @default(uuid())
+  name         String
+  slug         String    @unique
+  status       String    @default("ACTIVE") // ACTIVE, SUSPENDED, PENDING
+  mailServerId String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  members      OrganizationMember[]
+  domains      Domain[]
+  mailboxes    Mailbox[]
+  aliases      MailboxAlias[]
+  forwarders   MailboxForwarder[]
+  subscription Subscription?
+  invoices     Invoice[]
+  usageRecords UsageRecord[]
+  mailServer   MailServer?          @relation(fields: [mailServerId], references: [id])
+  supportTickets SupportTicket[]
+  auditLogs    AuditLog[]
+  domainOrders DomainOrder[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  organizationId String
+  userId         String
+  role           String       @default("CUSTOMER_ADMIN") // CUSTOMER_ADMIN, MEMBER
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Plan {
+  id                String         @id @default(uuid())
+  name              String
+  slug              String         @unique
+  description       String?
+  priceMonthlyCents Int
+  maxDomains        Int            @default(1)
+  maxMailboxes      Int            @default(5)
+  maxStorageGb      Int            @default(25)
+  maxAliases        Int            @default(10)
+  maxForwarders     Int            @default(10)
+  isActive          Boolean        @default(true)
+  isCustom          Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  subscriptions     Subscription[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model Subscription {
+  id                     String       @id @default(uuid())
+  organizationId         String       @unique
+  planId                 String
+  status                 String       @default("TRIAL") // TRIAL, ACTIVE, PAST_DUE, GRACE_PERIOD, SUSPENDED, CANCELLED, EXPIRED
+  currentPeriodStart     DateTime     @default(now())
+  currentPeriodEnd       DateTime
+  gracePeriodEnd         DateTime?
+  cancelAtPeriodEnd      Boolean      @default(false)
+  paymentProvider        String?      @default("mock")
+  providerSubscriptionId String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                   Plan         @relation(fields: [planId], references: [id])
+  invoices               Invoice[]
+
+  @@index([status])
+  @@index([currentPeriodEnd])
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  organizationId String
+  subscriptionId String?
+  invoiceNumber  String        @unique
+  amountCents    Int
+  currency       String        @default("USD")
+  status         String        @default("PAID") // PAID, OPEN, VOID, UNCOLLECTIBLE
+  dueDate        DateTime
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  payments       Payment[]
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model Payment {
+  id                    String   @id @default(uuid())
+  invoiceId             String
+  amountCents           Int
+  currency              String   @default("USD")
+  provider              String   @default("mock")
+  providerTransactionId String?
+  status                String   @default("SUCCEEDED") // SUCCEEDED, PENDING, FAILED
+  createdAt             DateTime @default(now())
+
+  invoice               Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([status])
+}
+
+model MailServer {
+  id                 String         @id @default(uuid())
+  name               String         @unique // e.g. MAIL-01
+  hostname           String         // mail01.monogrammail.com
+  ipAddress          String         // public IP
+  location           String         // e.g. "US-East (N. Virginia)"
+  providerType       String         @default("mock") // "iredmail", "mock"
+  status             String         @default("ONLINE") // ONLINE, OFFLINE, MAINTENANCE
+  capacityMailboxes  Int            @default(1000)
+  capacityStorageGb  Int            @default(5000)
+  allocatedMailboxes Int            @default(0)
+  allocatedStorageGb Int            @default(0)
+  isActive           Boolean        @default(true)
+  lastHeartbeat      DateTime?
+  metadata           String?        // JSON string with DB credentials / connection config
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  organizations      Organization[]
+  domains            Domain[]
+
+  @@index([status])
+  @@index([isActive])
+}
+
+model Domain {
+  id                      String            @id @default(uuid())
+  organizationId          String
+  mailServerId            String?
+  name                    String            @unique // e.g. company.com (always lowercase)
+  status                  String            @default("PENDING_VERIFICATION") // PENDING_VERIFICATION, VERIFIED, SUSPENDED, DELETED
+  dkimSelector            String            @default("default")
+  dkimPublicKey           String?
+  dkimPrivateKeyEncrypted String?
+  isVerified              Boolean           @default(false)
+  isManagedDns            Boolean           @default(false)
+  registrationSource      String?           @default("EXTERNAL") // PURCHASED, TRANSFERRED, EXTERNAL
+  expiresAt               DateTime?
+  autoRenew               Boolean           @default(true)
+  catchAllMailboxId       String?
+  verifiedAt              DateTime?
+  lastDnsCheckAt          DateTime?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  organization            Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  mailServer              MailServer?       @relation(fields: [mailServerId], references: [id])
+  mailboxes               Mailbox[]
+  aliases                 MailboxAlias[]
+  forwarders              MailboxForwarder[]
+  dnsChecks               DomainDnsCheck[]
+
+  @@index([organizationId])
+  @@index([name])
+  @@index([status])
+}
+
+model DomainDnsCheck {
+  id           String   @id @default(uuid())
+  domainId     String
+  checkedAt    DateTime @default(now())
+  mxValid      Boolean  @default(false)
+  mxDetails    String?
+  spfValid     Boolean  @default(false)
+  spfDetails   String?
+  dkimValid    Boolean  @default(false)
+  dkimDetails  String?
+  dmarcValid   Boolean  @default(false)
+  dmarcDetails String?
+  overallValid Boolean  @default(false)
+
+  domain       Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  @@index([domainId])
+  @@index([checkedAt])
+}
+
+model Mailbox {
+  id               String         @id @default(uuid())
+  organizationId   String
+  domainId         String
+  email            String         @unique // john@company.com
+  firstName        String?
+  lastName         String?
+  storageLimitMb   Int            @default(10240) // 10 GB
+  usedStorageBytes BigInt         @default(0)
+  status           String         @default("ACTIVE") // ACTIVE, SUSPENDED, DELETED
+  passwordHash     String         // SSHA512 / Dovecot compatible password hash
+  autoResponderEnabled   Boolean   @default(false)
+  autoResponderSubject   String?
+  autoResponderBody      String?
+  autoResponderStartDate DateTime?
+  autoResponderEndDate   DateTime?
+  spamWhitelist          String?   // comma-separated list of whitelisted senders/domains
+  spamBlocklist          String?   // comma-separated list of blocked senders/domains
+  hourlySentCount        Int       @default(0)
+  hourlySentResetAt      DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  domain           Domain         @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  aliases          MailboxAlias[]
+  messages         WebmailMessage[]
+
+  @@index([organizationId])
+  @@index([domainId])
+  @@index([email])
+  @@index([status])
+}
+
+model MailboxAlias {
+  id                   String       @id @default(uuid())
+  organizationId       String
+  domainId             String
+  sourceAddress        String       @unique // sales@company.com
+  destinationMailboxId String
+  status               String       @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  domain               Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  destinationMailbox   Mailbox      @relation(fields: [destinationMailboxId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([domainId])
+  @@index([sourceAddress])
+}
+
+model MailboxForwarder {
+  id                 String       @id @default(uuid())
+  organizationId     String
+  domainId           String
+  sourceAddress      String       // info@company.com
+  destinationAddress String       // external@partner.com
+  keepLocalCopy      Boolean      @default(true)
+  status             String       @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  domain             Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([domainId])
+  @@index([sourceAddress])
+}
+
+model UsageRecord {
+  id                         String       @id @default(uuid())
+  organizationId             String
+  recordedAt                 DateTime     @default(now())
+  totalStorageBytes          BigInt       @default(0)
+  totalMailboxes             Int          @default(0)
+  totalDomains               Int          @default(0)
+  outboundEmailsSentToday    Int          @default(0)
+  inboundEmailsReceivedToday Int          @default(0)
+
+  organization               Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([recordedAt])
+}
+
+model SupportTicket {
+  id             String           @id @default(uuid())
+  organizationId String
+  userId         String
+  ticketNumber   String           @unique
+  subject        String
+  status         String           @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority       String           @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages       SupportMessage[]
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model SupportMessage {
+  id        String        @id @default(uuid())
+  ticketId  String
+  userId    String
+  message   String
+  isStaff   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+}
+
+model AuditLog {
+  id             String        @id @default(uuid())
+  actorId        String?
+  actorRole      String?
+  organizationId String?
+  action         String
+  resourceType   String
+  resourceId     String?
+  ipAddress      String?
+  userAgent      String?
+  metadata       String?       // JSON string
+  createdAt      DateTime      @default(now())
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  category    String   @default("GENERAL") // GENERAL, MAIL, DNS, BILLING, SECURITY
+  isEncrypted Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([token])
+  @@index([email])
+}
+
+model WebmailMessage {
+  id             String    @id @default(uuid())
+  mailboxId      String
+  folder         String    @default("INBOX") // INBOX, SENT, DRAFTS, TRASH, ARCHIVE
+  sender         String
+  senderEmail    String
+  recipient      String
+  recipientEmail String
+  subject        String
+  bodyText       String
+  bodyHtml       String?
+  isRead         Boolean   @default(false)
+  isStarred      Boolean   @default(false)
+  sizeBytes      Int       @default(1024)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  mailbox        Mailbox   @relation(fields: [mailboxId], references: [id], onDelete: Cascade)
+
+  @@index([mailboxId])
+  @@index([folder])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model DomainOrder {
+  id              String        @id @default(uuid())
+  organizationId  String
+  domainName      String
+  orderType       String        @default("REGISTER") // REGISTER, TRANSFER
+  status          String        @default("COMPLETED") // PENDING, COMPLETED, FAILED
+  years           Int           @default(1)
+  amountCents     Int           @default(0)
+  currency        String        @default("USD")
+  eppCode         String?
+  registrarRef    String?
+  errorMessage    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([domainName])
+  @@index([status])
+}
+
+model UserSession {
+  id           String   @id @default(uuid())
+  userId       String
+  sessionToken String?
+  ipAddress    String?
+  userAgent    String?
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+}
