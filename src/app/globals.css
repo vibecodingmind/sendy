@@ -102,6 +102,57 @@
   .auth-glow {
     background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.18), transparent 68%);
   }
+
+  /* Super Admin control plane */
+  .surface-admin {
+    @apply min-h-screen bg-ink-950 text-slate-100;
+    background-image:
+      radial-gradient(ellipse 70% 45% at 0% 0%, rgba(245, 158, 11, 0.06), transparent),
+      radial-gradient(ellipse 50% 40% at 100% 100%, rgba(99, 102, 241, 0.05), transparent);
+  }
+
+  .admin-main {
+    @apply flex-1 overflow-y-auto p-6 md:p-8 lg:p-10;
+  }
+
+  .admin-card {
+    @apply bg-ink-900/80 backdrop-blur-sm border border-slate-800/90 rounded-2xl shadow-lg shadow-black/20;
+  }
+
+  .admin-nav-item {
+    @apply flex items-center gap-3 rounded-xl text-sm font-medium transition-all relative;
+  }
+
+  .admin-nav-active {
+    @apply bg-amber-500/15 text-amber-200 border border-amber-500/25 shadow-sm shadow-amber-500/10;
+  }
+
+  .admin-nav-idle {
+    @apply text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 border border-transparent;
+  }
+
+  .admin-page-title {
+    @apply text-2xl sm:text-3xl font-display font-bold tracking-tight text-white;
+  }
+
+  .admin-page-subtitle {
+    @apply text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed;
+  }
+
+  .admin-stat-value {
+    @apply text-2xl sm:text-3xl font-display font-bold tabular-nums text-white;
+  }
+
+  .btn-admin-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl
+      bg-amber-500 text-ink-950 hover:bg-amber-400 active:scale-[0.98] transition-all
+      shadow-sm shadow-amber-500/25 disabled:opacity-50;
+  }
+
+  .btn-admin-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl
+      bg-slate-800/80 border border-slate-700 text-slate-200 hover:bg-slate-700/80 transition-all;
+  }
 }
 
 input[type="range"] {
